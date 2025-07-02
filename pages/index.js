@@ -41,6 +41,7 @@ const groupToCandles = (trades) => {
 
 const fetchTrades = async () => {
   if (!ca) return;
+  console.log("Fetching trades for CA:", ca);
   try {
     const res = await fetch(`/api/history?ca=${ca}`);
     if (!res.ok) {
@@ -106,6 +107,7 @@ const fetchTokenMeta = async () => {
 
   // ---------------- fetch data on CA change & poll ----------------
   useEffect(() => {
+    console.log("CA changed, fetching trades...");
     fetchTrades();
     fetchTokenMeta();
     const id = setInterval(fetchTrades, 15000);
