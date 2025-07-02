@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { createChart } from "lightweight-charts";
 
 export default function Home() {
-  const [ca, setCa] = useState("");
+  const [ca, setCa] = useState("0xC7e29EA23E3dAb1E1bc891674dCF631cb8569f00");
   const [candles, setCandles] = useState([]);
   const [tokenMeta, setTokenMeta] = useState({});
   const [latestPrice, setLatestPrice] = useState(null);
@@ -49,12 +49,19 @@ export default function Home() {
   };
 
   useEffect(() => {
-    if (!ca) return;
-    fetchTrades();
-    fetchTokenMeta();
-    const id = setInterval(fetchTrades, 15000);
-    return () => clearInterval(id);
-  }, [ca]);
+	if (!ca) return;
+	fetchTrades();
+	fetchTokenMeta();
+	const interval = setInterval(() => fetchTrades(), 15000); // auto refresh
+	return () => clearInterval(interval);
+}, [ca]);
+
+  useEffect(() => {
+	if (ca) {
+	fetchTrades();
+	fetchTokenMeta();
+  }
+}, []); // runs only on first render
 
   // create / resize chart
   useEffect(() => {
