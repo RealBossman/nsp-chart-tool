@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import UniswapV2PairABI from "@/utils/UniswapV2Pair.json";
+import UniswapV2PairABI from '../../utils/UniswapV2Pair.json';
 
 const RPC_URL = "https://puppynet.shibrpc.com";
 const FACTORY_ADDRESS = "0xb9E15055807FcDd1f845c1eBF04BF7A176379faA";
