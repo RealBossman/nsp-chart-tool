@@ -21,45 +21,63 @@ export default function Home() {
     { time: Math.floor(Date.now() / 1000) -  60, open: 1.4, high: 1.6, low: 1.3, close: 1.5 },
   ];
 
-  // ---------------- helpers ----------------
-  const groupToCandles = (trades) => {
-    const interval = 60;
-    const map = {};
-    trades.forEach(({ timestamp, price }) => {
-      const bucket = Math.floor(timestamp / interval) * interval;
-      if (!map[bucket]) {
-        map[bucket] = { time: bucket, open: price, high: price, low: price, close: price };
-      } else {
-        const c = map[bucket];
-        c.high = Math.max(c.high, price);
-        c.low = Math.min(c.low, price);
-        c.close = price;
-      }
-    });
-    return Object.values(map).sort((a, b) => a.time - b.time);
-  };
+// ---------------- helpers ----------------
+const groupToCandles = (trades) => {
+  const interval = 60;
+  const map = {};
+  trades.forEach(({ timestamp, price }) => {
+    const bucket = Math.floor(timestamp / interval) * interval;
+    if (!map[bucket]) {
+      map[bucket] = { time: bucket, open: price, high: price, low: price, close: price };
+    } else {
+      const c = map[bucket];
+      c.high = Math.max(c.high, price);
+      c.low = Math.min(c.low, price);
+      c.close = price;
+    }
+  });
+  return Object.values(map).sort((a, b) => a.time - b.time);
+};
 
-  const fetchTrades = async () => {
-    if (!ca) return;
+const fetchTrades = async () => {
+  if (!ca) return;
+  try {
     const res = await fetch(`/api/history?ca=${ca}`);
+    if (!res.ok) {
+      console.error("API /api/history error:", res.status);
+      setCandles([]);               // <- fallback to default
+      return;
+    }
     const data = await res.json();
+    if (!data.trades || !Array.isArray(data.trades)) {
+      console.error("Unexpected payload:", data);
+      setCandles([]);
+      return;
+    }
     const grouped = groupToCandles(data.trades);
     setCandles(grouped);
     if (data.trades.length) {
       setLatestPrice(data.trades[data.trades.length - 1].price.toFixed(8));
     }
-  };
+  } catch (err) {
+    console.error("fetchTrades() failed:", err);
+    setCandles([]);                 // <- fallback to default
+  }
+};
 
-  const fetchTokenMeta = async () => {
-    if (!ca) return;
-    try {
-      const res = await fetch(`https://puppyscan.shib.io/api/token/${ca}`);
-      const data = await res.json();
-      setTokenMeta({ name: data.name, symbol: data.symbol, logo: data.logoURI });
-    } catch {
-      setTokenMeta({});
-    }
-  };
+const fetchTokenMeta = async () => {
+  if (!ca) return;
+  try {
+    const res = await fetch(`https://puppyscan.shib.io/api/token/${ca}`);
+    if (!res.ok) throw new Error(res.status);
+    const data = await res.json();
+    setTokenMeta({ name: data.name, symbol: data.symbol, logo: data.logoURI });
+  } catch (err) {
+    console.error("fetchTokenMeta() failed:", err);
+    setTokenMeta({});
+  }
+};
+
 
   // ---------------- create chart once ----------------
   useEffect(() => {
