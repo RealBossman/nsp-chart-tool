@@ -17,7 +17,9 @@ export default async function handler(req, res) {
     ], provider);
 
     const pairAddress = await factory.getPair(ca, WBONE_ADDRESS);
-    if (pairAddress === ethers.ZeroAddress) {
+    console.log("Pair address:", pairAddress);
+
+    if (pairAddress === "0x0000000000000000000000000000000000000000") {
       return res.status(404).json({ error: "No pair found for token" });
     }
 
@@ -55,7 +57,7 @@ export default async function handler(req, res) {
     res.status(200).json({ trades });
 
   } catch (err) {
-    console.error(err);
+    console.error("API ERROR:", err);
     res.status(500).json({ error: "Failed to fetch swap data" });
   }
 }
